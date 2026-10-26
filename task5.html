@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Attendance Manager</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f1f5f9;
+            margin: 0;
+            color: #1e293b;
+        }
+
+        header {
+            background-color: #2457a7;
+            color: white;
+            text-align: center;
+            padding: 25px;
+        }
+
+        header h1 {
+            margin: 0 0 10px;
+        }
+
+        .container {
+            max-width: 850px;
+            margin: 25px auto;
+            padding: 15px;
+        }
+
+        .date-box, .card {
+            background-color: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px #00000010;
+        }
+
+        .date-box {
+            border-left: 5px solid #2457a7;
+        }
+
+        .statistics {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat {
+            background-color: white;
+            padding: 18px;
+            flex: 1;
+            text-align: center;
+            border-radius: 10px;
+        }
+
+        .stat h2 {
+            color: #2457a7;
+            margin-bottom: 0;
+        }
+
+        input, select {
+            padding: 11px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 15px;
+        }
+
+        #studentName, #searchName {
+            width: 65%;
+        }
+
+        button {
+            padding: 11px 14px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 4px;
+            font-weight: bold;
+        }
+
+        .add-btn {
+            background-color: #2457a7;
+            color: white;
+        }
+
+        .present-btn {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+
+        .absent-btn {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+
+        .delete-btn {
+            background-color: #e2e8f0;
+            color: #334155;
+        }
+
+        .student {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 12px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .student-name {
+            font-weight: bold;
+            overflow-wrap: anywhere;
+        }
+
+        .student-status {
+            color: #64748b;
+            font-size: 13px;
+            margin-top: 5px;
+        }
+
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .message {
+            color: #64748b;
+            text-align: center;
+            padding: 15px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #64748b;
+        }
+
+        @media (max-width: 600px) {
+            .statistics {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            #studentName, #searchName {
+                width: 90%;
+                margin-bottom: 8px;
+            }
+
+            .student {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .actions {
+                justify-content: flex-start;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>Student Attendance Manager</h1>
+        <p>Manage students and track daily attendance</p>
+    </header>
+
+    <div class="container">
+
+        <div class="date-box">
+            <h3>Today's Date</h3>
+            <p id="todayDate"></p>
+            <p id="dayName"></p>
+        </div>
+
+        <div class="statistics">
+            <div class="stat">
+                <p>Total Students</p>
+                <h2 id="total">0</h2>
+            </div>
+
+            <div class="stat">
+                <p>Present</p>
+                <h2 id="present">0</h2>
+            </div>
+
+            <div class="stat">
+                <p>Absent</p>
+                <h2 id="absent">0</h2>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Add Student</h3>
+
+            <input
+                type="text"
+                id="studentName"
+                placeholder="Enter student name"
+            >
+
+            <button class="add-btn" onclick="addStudent()">
+                Add Student
+            </button>
+        </div>
+
+        <div class="card">
+            <h3>Search Student</h3>
+
+            <input
+                type="text"
+                id="searchName"
+                placeholder="Search by name"
+                oninput="displayStudents()"
+            >
+
+            <h3>Student List</h3>
+
+            <div id="studentList"></div>
+        </div>
+
+    </div>
+
+    <footer>
+        Student Attendance Manager | HTML, CSS and JavaScript
+    </footer>
+
+    <script>
+        // Get today's date.
+        let today = new Date();
+
+        document.getElementById("todayDate").textContent =
+            today.toLocaleDateString("en-IN", {
+                day: "numeric",
+                month: "long",
+                year: "numeric"
+            });
+
+        document.getElementById("dayName").textContent =
+            "Day: " + today.toLocaleDateString("en-IN", {
+                weekday: "long"
+            });
+
+        // Sample student data.
+        let students = [
+            { id: 1, name: "Arun", status: "Present" },
+            { id: 2, name: "Priya", status: "Absent" },
+            { id: 3, name: "Karthik", status: "Present" },
+            { id: 4, name: "Divya", status: "Not Marked" }
+        ];
+
+        // Add a new student.
+        function addStudent() {
+            let input = document.getElementById("studentName");
+            let name = input.value.trim();
+
+            if (name === "") {
+                alert("Please enter a student name.");
+                return;
+            }
+
+            // Check whether the student already exists.
+            let exists = students.some(function(student) {
+                return student.name.toLowerCase() === name.toLowerCase();
+            });
+
+            if (exists) {
+                alert("This student already exists.");
+                return;
+            }
+
+            // Add the student to the array.
+            students.push({
+                id: Date.now(),
+                name: name,
+                status: "Not Marked"
+            });
+
+            input.value = "";
+            displayStudents();
+        }
+
+        // Mark attendance.
+        function markAttendance(id, status) {
+            let student = students.find(function(item) {
+                return item.id === id;
+            });
+
+            if (student) {
+                student.status = status;
+                displayStudents();
+            }
+        }
+
+        // Delete a student.
+        function deleteStudent(id) {
+            students = students.filter(function(student) {
+                return student.id !== id;
+            });
+
+            displayStudents();
+        }
+
+        // Update the statistics.
+        function updateStatistics() {
+            let totalStudents = students.length;
+
+            let presentStudents = students.filter(function(student) {
+                return student.status === "Present";
+            }).length;
+
+            let absentStudents = students.filter(function(student) {
+                return student.status === "Absent";
+            }).length;
+
+            document.getElementById("total").textContent =
+                totalStudents;
+
+            document.getElementById("present").textContent =
+                presentStudents;
+
+            document.getElementById("absent").textContent =
+                absentStudents;
+        }
+
+        // Display students and search results.
+        function displayStudents() {
+            let list = document.getElementById("studentList");
+            let search = document.getElementById("searchName")
+                .value.toLowerCase().trim();
+
+            list.replaceChildren();
+
+            // Filter students by name.
+            let filteredStudents = students.filter(function(student) {
+                return student.name.toLowerCase().includes(search);
+            });
+
+            // Sort students alphabetically.
+            filteredStudents = [...filteredStudents].sort(function(a, b) {
+                return a.name.localeCompare(b.name);
+            });
+
+            // Create the student list using map().
+            let studentElements = filteredStudents.map(function(student) {
+                let row = document.createElement("div");
+                row.className = "student";
+
+                let info = document.createElement("div");
+
+                let name = document.createElement("div");
+                name.className = "student-name";
+                name.textContent = student.name;
+
+                let status = document.createElement("div");
+                status.className = "student-status";
+                status.textContent = "Status: " + student.status;
+
+                info.append(name, status);
+
+                let actions = document.createElement("div");
+                actions.className = "actions";
+
+                let presentButton = document.createElement("button");
+                presentButton.className = "present-btn";
+                presentButton.textContent = "Present";
+                presentButton.onclick = function() {
+                    markAttendance(student.id, "Present");
+                };
+
+                let absentButton = document.createElement("button");
+                absentButton.className = "absent-btn";
+                absentButton.textContent = "Absent";
+                absentButton.onclick = function() {
+                    markAttendance(student.id, "Absent");
+                };
+
+                let deleteButton = document.createElement("button");
+                deleteButton.className = "delete-btn";
+                deleteButton.textContent = "Delete";
+                deleteButton.onclick = function() {
+                    deleteStudent(student.id);
+                };
+
+                actions.append(
+                    presentButton,
+                    absentButton,
+                    deleteButton
+                );
+
+                row.append(info, actions);
+
+                return row;
+            });
+
+            if (studentElements.length === 0) {
+                let message = document.createElement("p");
+                message.className = "message";
+                message.textContent = "No students found.";
+                list.appendChild(message);
+            } else {
+                list.append(...studentElements);
+            }
+
+            updateStatistics();
+        }
+
+        // Show the initial student list.
+        displayStudents();
+    </script>
+
+</body>
+</html>
